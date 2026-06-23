@@ -2,49 +2,71 @@ package app.person.controller;
 
 import app.person.model.Person;
 import app.person.model.Weather;
-import app.person.service.PersonService;
+import app.person.repository.PersonRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
 @RestController
 public class PersonController {
-    private final PersonService personService;
+    private final PersonRepository personRepository;
+    private final RestTemplate restTemplate;
+    private final String locationServiceUrl;
 
-    public PersonController(PersonService personService) {
-        this.personService = personService;
+    public PersonController(PersonRepository personRepository,
+                            RestTemplate restTemplate,
+                            @Value("${location.service.url}") String locationServiceUrl) {
+        this.personRepository = personRepository;
+        this.restTemplate = restTemplate;
+        this.locationServiceUrl = locationServiceUrl;
     }
 
     @GetMapping("/person")
     public List<Person> getAll() {
-        return personService.findAll();
+        return personRepository.findAll();
     }
 
     @GetMapping("/person/{id}")
     public Person getById(@PathVariable int id) {
-        return personService.findById(id);
+        return personRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
     @PostMapping("/person")
     @ResponseStatus(HttpStatus.CREATED)
     public Person create(@RequestBody Person person) {
-        return personService.save(person);
+        return personRepository.save(person);
     }
 
     @PutMapping("/person/{id}")
     public Person update(@PathVariable int id, @RequestBody Person person) {
-        return personService.update(id, person);
+        if (!personRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        personRepository.deleteById(id);
+        person.setId(id);
+        return personRepository.save(person);
     }
 
     @DeleteMapping("/person/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable int id) {
-        personService.delete(id);
+        personRepository.deleteById(id);
     }
 
     @GetMapping("/person/{id}/weather")
     public Weather getWeather(@PathVariable int id) {
-        return personService.getWeather(id);
+        Person person = personRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        RestTemplate restTemplate = this.restTemplate;
+        return restTemplate.getForObject(
+                locationServiceUrl + "?name={name}",
+                Weather.class,
+                person.getLocation()
+        );
     }
 }
