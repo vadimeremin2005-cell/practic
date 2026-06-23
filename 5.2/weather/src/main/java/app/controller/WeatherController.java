@@ -1,52 +1,45 @@
 package app.controller;
 
-import app.dto.Weather;
-import app.repository.WeatherRepository;
+import app.model.Weather;
+import app.service.WeatherService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/weather")
 public class WeatherController {
-    private final WeatherRepository weatherRepository;
+    private final WeatherService weatherService;
 
-    public WeatherController(WeatherRepository weatherRepository) {
-        this.weatherRepository = weatherRepository;
+    public WeatherController(WeatherService weatherService) {
+        this.weatherService = weatherService;
     }
 
     @GetMapping
     public Weather getByCoordinates(@RequestParam double lat, @RequestParam double lon) {
-        return weatherRepository.findByLatitudeAndLongitude(lat, lon)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        return weatherService.getByCoordinates(lat, lon);
     }
 
     @GetMapping("/all")
     public List<Weather> getAll() {
-        return weatherRepository.findAll();
+        return weatherService.findAll();
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Weather create(@RequestBody Weather weather) {
-        return weatherRepository.save(weather);
+        return weatherService.create(weather);
     }
 
     @PutMapping("/{id}")
     public Weather update(@PathVariable Long id, @RequestBody Weather weather) {
-        if (!weatherRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
-        weatherRepository.deleteById(id);
-        weather.setId(id);
-        return weatherRepository.save(weather);
+        return weatherService.update(id, weather);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
-        weatherRepository.deleteById(id);
+        weatherService.delete(id);
     }
 }
