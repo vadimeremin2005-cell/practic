@@ -1,51 +1,43 @@
 package app.controller;
 
-import app.dto.Person;
-import app.repository.PersonRepository;
+import app.model.Person;
+import app.service.PersonService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.util.List;
 
 @RestController
+@RequestMapping("/person")
 public class PersonController {
-    private final PersonRepository personRepository;
+    private final PersonService personService;
 
-    public PersonController(PersonRepository personRepository) {
-        this.personRepository = personRepository;
+    public PersonController(PersonService personService) {
+        this.personService = personService;
     }
 
-    @GetMapping("/person")
-    public List<Person> getAll() {
-        return personRepository.findAll();
+    @GetMapping
+    public Iterable<Person> findAll() {
+        return personService.findAll();
     }
 
-    @GetMapping("/person/{id}")
-    public Person getById(@PathVariable int id) {
-        return personRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    @GetMapping("/{id}")
+    public Person findById(@PathVariable int id) {
+        return personService.findById(id);
     }
 
-    @PostMapping("/person")
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Person create(@RequestBody Person person) {
-        return personRepository.save(person);
+    public Person save(@RequestBody Person person) {
+        return personService.save(person);
     }
 
-    @PutMapping("/person/{id}")
+    @PutMapping("/{id}")
     public Person update(@PathVariable int id, @RequestBody Person person) {
-        if (!personRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
-        personRepository.deleteById(id);
-        person.setId(id);
-        return personRepository.save(person);
+        return personService.update(id, person);
     }
 
-    @DeleteMapping("/person/{id}")
+    @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable int id) {
-        personRepository.deleteById(id);
+        personService.delete(id);
     }
 }
