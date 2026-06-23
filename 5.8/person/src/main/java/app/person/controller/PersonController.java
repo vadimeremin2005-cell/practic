@@ -3,6 +3,7 @@ package app.person.controller;
 import app.person.model.Person;
 import app.person.model.Weather;
 import app.person.repository.PersonRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -14,10 +15,14 @@ import java.util.List;
 public class PersonController {
     private final PersonRepository personRepository;
     private final RestTemplate restTemplate;
+    private final String locationServiceUrl;
 
-    public PersonController(PersonRepository personRepository, RestTemplate restTemplate) {
+    public PersonController(PersonRepository personRepository,
+                            RestTemplate restTemplate,
+                            @Value("${location.service.url}") String locationServiceUrl) {
         this.personRepository = personRepository;
         this.restTemplate = restTemplate;
+        this.locationServiceUrl = locationServiceUrl;
     }
 
     @GetMapping("/person")
@@ -59,7 +64,7 @@ public class PersonController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         RestTemplate restTemplate = this.restTemplate;
         return restTemplate.getForObject(
-                "http://location-service/location/weather?name={name}",
+                locationServiceUrl + "?name={name}",
                 Weather.class,
                 person.getLocation()
         );
