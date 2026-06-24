@@ -1,8 +1,13 @@
 package app.person.model;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
 public class Weather {
-    public Coord coord;
-    public Main main;
-    public String name;
-    public int cod;
+    private Coord coord;
+    private Main main;
+    private String name;
+    private int cod;
 }

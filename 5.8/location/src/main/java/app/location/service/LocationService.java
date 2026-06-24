@@ -55,7 +55,6 @@ public class LocationService {
     public Weather getWeather(String name) {
         Geodata geodata = new Geodata(repository.findByName(name)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND)));
-        RestTemplate restTemplate = this.restTemplate;
         return restTemplate.getForObject(
                 weatherServiceUrl + "?lat={lat}&lon={lon}",
                 Weather.class,

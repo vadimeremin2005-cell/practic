@@ -49,7 +49,6 @@ public class PersonService {
     public Weather getWeather(int id) {
         Person person = personRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        RestTemplate restTemplate = this.restTemplate;
         return restTemplate.getForObject(
                 "http://location-service/location/weather?name={name}",
                 Weather.class,

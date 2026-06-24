@@ -5,23 +5,19 @@ import app.person.model.Weather;
 import app.person.service.PersonService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
 @RestController
 public class PersonController {
     private final PersonService personService;
-    private final RestTemplate restTemplate;
 
-    public PersonController(PersonService personService, RestTemplate restTemplate) {
+    public PersonController(PersonService personService) {
         this.personService = personService;
-        this.restTemplate = restTemplate;
     }
 
     @GetMapping("/person")
     public List<Person> getAll() {
-        RestTemplate restTemplate = this.restTemplate;
         return personService.findAll();
     }
 
