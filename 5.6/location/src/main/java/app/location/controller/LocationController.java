@@ -17,11 +17,13 @@ public class LocationController {
     }
 
     @GetMapping("/location")
-    public List<Location> getAll(@RequestParam(required = false) String name) {
-        if (name != null) {
-            return List.of(locationService.findByName(name));
-        }
+    public List<Location> getAll() {
         return locationService.findAll();
+    }
+
+    @GetMapping(value = "/location", params = "name")
+    public Location getByName(@RequestParam String name) {
+        return locationService.findByName(name);
     }
 
     @PostMapping("/location")
